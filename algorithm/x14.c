@@ -49,6 +49,7 @@
 #include "sph/sph_hamsi.h"
 #include "sph/sph_fugue.h"
 #include "sph/sph_shabal.h"
+#include "sph/sph_sm3.h"
 
 /* Move init out of loop, so init once externally, and then use one single memcpy with that bigger memory block */
 typedef struct {
@@ -106,57 +107,85 @@ static
 #endif
 inline void x14hash(void *state, const void *input)
 {
-  init_X14hash_contexts();
+	sph_blake512_context ctx_blake;
+	sph_bmw512_context ctx_bmw;
+	sph_groestl512_context ctx_groestl;
+	sph_jh512_context ctx_jh;
+	sph_keccak512_context ctx_keccak;
+	sph_skein512_context ctx_skein;
+	sph_luffa512_context ctx_luffa;
+	sph_cubehash512_context ctx_cubehash;
+	sph_shavite512_context ctx_shavite;
+	sph_simd512_context ctx_simd;
+	sph_echo512_context ctx_echo;
+	sph_hamsi512_context ctx_hamsi;
+	sph_fugue512_context ctx_fugue;
+	sm3_ctx_t ctx_sm3;
 
-  Xhash_context_holder ctx;
+	uint32_t hash[32];
+	memset(hash, 0, sizeof hash);
 
-  uint32_t hashA[16], hashB[16];
 
-  memcpy(&ctx, &base_contexts, sizeof(base_contexts));
+	sph_blake512_init(&ctx_blake);
+	sph_blake512(&ctx_blake, input, 80);
+	sph_blake512_close(&ctx_blake, (void*)hash);
 
-  sph_blake512 (&ctx.blake1, input, 80);
-  sph_blake512_close (&ctx.blake1, hashA);
+	sph_bmw512_init(&ctx_bmw);
+	sph_bmw512(&ctx_bmw, (const void*)hash, 64);
+	sph_bmw512_close(&ctx_bmw, (void*)hash);
 
-  sph_bmw512 (&ctx.bmw1, hashA, 64);
-  sph_bmw512_close(&ctx.bmw1, hashB);
+	sph_groestl512_init(&ctx_groestl);
+	sph_groestl512(&ctx_groestl, (const void*)hash, 64);
+	sph_groestl512_close(&ctx_groestl, (void*)hash);
 
-  sph_groestl512 (&ctx.groestl1, hashB, 64);
-  sph_groestl512_close(&ctx.groestl1, hashA);
+	sph_skein512_init(&ctx_skein);
+	sph_skein512(&ctx_skein, (const void*)hash, 64);
+	sph_skein512_close(&ctx_skein, (void*)hash);
 
-  sph_skein512 (&ctx.skein1, hashA, 64);
-  sph_skein512_close(&ctx.skein1, hashB);
+	sph_jh512_init(&ctx_jh);
+	sph_jh512(&ctx_jh, (const void*)hash, 64);
+	sph_jh512_close(&ctx_jh, (void*)hash);
 
-  sph_jh512 (&ctx.jh1, hashB, 64);
-  sph_jh512_close(&ctx.jh1, hashA);
+	sph_keccak512_init(&ctx_keccak);
+	sph_keccak512(&ctx_keccak, (const void*)hash, 64);
+	sph_keccak512_close(&ctx_keccak, (void*)hash);
 
-  sph_keccak512 (&ctx.keccak1, hashA, 64);
-  sph_keccak512_close(&ctx.keccak1, hashB);
+	sph_luffa512_init(&ctx_luffa);
+	sph_luffa512(&ctx_luffa, (const void*)hash, 64);
+	sph_luffa512_close(&ctx_luffa, (void*)hash);
 
-  sph_luffa512 (&ctx.luffa1, hashB, 64);
-  sph_luffa512_close (&ctx.luffa1, hashA);
+	sph_cubehash512_init(&ctx_cubehash);
+	sph_cubehash512(&ctx_cubehash, (const void*)hash, 64);
+	sph_cubehash512_close(&ctx_cubehash, (void*)hash);
 
-  sph_cubehash512 (&ctx.cubehash1, hashA, 64);
-  sph_cubehash512_close(&ctx.cubehash1, hashB);
+	sph_shavite512_init(&ctx_shavite);
+	sph_shavite512(&ctx_shavite, (const void*)hash, 64);
+	sph_shavite512_close(&ctx_shavite, (void*)hash);
 
-  sph_shavite512 (&ctx.shavite1, hashB, 64);
-  sph_shavite512_close(&ctx.shavite1, hashA);
+	sph_simd512_init(&ctx_simd);
+	sph_simd512(&ctx_simd, (const void*)hash, 64);
+	sph_simd512_close(&ctx_simd, (void*)hash);
 
-  sph_simd512 (&ctx.simd1, hashA, 64);
-  sph_simd512_close(&ctx.simd1, hashB);
+	sph_echo512_init(&ctx_echo);
+	sph_echo512(&ctx_echo, (const void*)hash, 64);
+	sph_echo512_close(&ctx_echo, (void*)hash);
 
-  sph_echo512 (&ctx.echo1, hashB, 64);
-  sph_echo512_close(&ctx.echo1, hashA);
+	uint32_t sm3_hash[32];
+	memset(sm3_hash, 0, sizeof sm3_hash);
 
-  sph_hamsi512 (&ctx.hamsi1, hashA, 64);
-  sph_hamsi512_close(&ctx.hamsi1, hashB);
+	sm3_init(&ctx_sm3);
+	sph_sm3(&ctx_sm3, (const void*)hash, 64);
+	sph_sm3_close(&ctx_sm3, (void*)sm3_hash);
 
-  sph_fugue512 (&ctx.fugue1, hashB, 64);
-  sph_fugue512_close(&ctx.fugue1, hashA);
+	sph_hamsi512_init(&ctx_hamsi);
+	sph_hamsi512(&ctx_hamsi, (const void*)sm3_hash, 64);
+	sph_hamsi512_close(&ctx_hamsi, (void*)hash);
+	
+	sph_fugue512_init(&ctx_fugue);
+	sph_fugue512(&ctx_fugue, (const void*)hash, 64);
+	sph_fugue512_close(&ctx_fugue, (void*)hash);
 
-  sph_shabal512 (&ctx.shabal1, (const unsigned char*)hashA, 64);
-  sph_shabal512_close(&ctx.shabal1, hashB);
-
-  memcpy(state, hashB, 32);
+	memcpy(state, hash, 32);
 }
 
 static const uint32_t diff1targ = 0x0000ffff;

@@ -1,11 +1,11 @@
 /*
- * X14 kernel implementation.
+ * X13 kernel implementation.
  *
  * ==========================(LICENSE BEGIN)============================
  *
  * Copyright (c) 2014  phm
  * Copyright (c) 2014 Girino Vey
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -13,10 +13,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -30,8 +30,8 @@
  * @author   phm <phm@inbox.com>
  */
 
-#ifndef X14_CL
-#define X14_CL
+#ifndef X13MOD_CL
+#define X13MOD_CL
 
 #if __ENDIAN_LITTLE__
 #define SPH_LITTLE_ENDIAN 1
@@ -772,7 +772,7 @@ __kernel void simd(__global hash_t* hashes)
     barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-#ifndef X14M
+#ifndef X13MODOLD
 
 __attribute__((reqd_work_group_size(WORKSIZE, 1, 1)))
 __kernel void echo(__global hash_t* hashes)
@@ -1643,6 +1643,6 @@ __kernel void echo_hamsi_fugue(__global hash_t* hashes, __global uint* output, c
     barrier(CLK_GLOBAL_MEM_FENCE); 
 }
 
-#endif // X14M
+#endif // X13MODOLD
 
-#endif // X14_CL
+#endif // X13MOD_CL
